@@ -75,3 +75,4 @@ CREATE TABLE teacher2 (
 )AS SELECT id , name FROM teacher;
 
 SELECT * FROM teacher2;
+
