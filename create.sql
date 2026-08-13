@@ -40,11 +40,18 @@ CREATE TABLE employee (
 
 );
 
+
 INSERT INTO employee VALUE (2 , 150000);
 
 SELECT * FROM employee;
 
 SELECT salary FROM employee WHERE salary > 50000;
+
+SELECT MAX(e.salary) as avg_salary , COUNT(e.id) as employee_count , e.department FROM employee as e GROUP BY e.department;
+
+SELECT e.salary FROM employee as e WHERE (SELECT AVG(e.salary) as avg_salary
+                                          FROM employee as e
+) < e.salary;
 
 ALTER TABLE employee ADD COLUMN name VARCHAR(55);
 ALTER TABLE employee CHANGE COLUMN department department VARCHAR(55);
@@ -70,7 +77,7 @@ UPDATE employee SET department = 'IT' WHERE id =1;
 SELECT e2.name, e1.department FROM employee as e1 INNER JOIN employee as e2;
 SELECT name, MIN(department) AS department FROM employee GROUP BY name;
 
-CREATE TABLE teacher (
+CREATE TABLE employee (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(55) DEFAULT 'Bhakti'
 );
@@ -113,12 +120,18 @@ CREATE TABLE orders (
     CONSTRAINT fk_customer_id FOREIGN KEY (customer_id) REFERENCES customer(id)
 );
 
-INSERT INTO customer VALUE(1,'Ishwari'),
-    (2, 'Bhakti'),
-    (3 , 'Keshav');
+INSERT INTO customer VALUE(17,'kanha'),
+    (18, 'kanha');
+#     (9 , 'Keshav'),
+#     (10 , 'Keshav'),
+#     (11 , 'Radhika'),
+#     (12 , 'Ramya');
 
 INSERT INTO orders VALUE (1 , 1 , 'Milk'),
     (2 , 2 , 'Cookies'),
     (3 , 2 , 'Makhan');
 
-SELECT c.name FROM customer as c LEFT JOIN orders as o ON c.id = o.customer_id WHERE o.customer_id IS NULL;
+SELECT c.id , c.name FROM customer as c LEFT JOIN orders as o ON c.id = o.customer_id WHERE o.id IS NULL;
+SELECT COUNT(c.name) as duplicate , c.name FROM customer as c WHERE c.name  LIKE 'k%' GROUP BY c.name HAVING duplicate >=2 ;
+
+
