@@ -53,6 +53,19 @@ SELECT e.salary FROM employee as e WHERE (SELECT AVG(e.salary) as avg_salary
                                           FROM employee as e
 ) < e.salary;
 
+SELECT e.salary FROM employee AS e  ORDER BY e.salary DESC LIMIT 1 OFFSET 3;
+
+SELECT salary
+FROM (
+    SELECT
+        salary,
+        DENSE_RANK() OVER (ORDER BY salary DESC) AS salary_rank
+    FROM employee
+) ranked
+WHERE salary_rank = 3;
+
+
+
 ALTER TABLE employee ADD COLUMN name VARCHAR(55);
 ALTER TABLE employee CHANGE COLUMN department department VARCHAR(55);
 ALTER TABLE employee DROP CONSTRAINT department;
@@ -134,4 +147,92 @@ INSERT INTO orders VALUE (1 , 1 , 'Milk'),
 SELECT c.id , c.name FROM customer as c LEFT JOIN orders as o ON c.id = o.customer_id WHERE o.id IS NULL;
 SELECT COUNT(c.name) as duplicate , c.name FROM customer as c WHERE c.name  LIKE 'k%' GROUP BY c.name HAVING duplicate >=2 ;
 
+
+CREATE TABLE employees (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(100),
+    manager_id INT
+);
+
+INSERT INTO employees (emp_id, emp_name, manager_id) VALUES
+(1, 'CEO', NULL),
+(2, 'Manager A', 1),
+(3, 'Manager B', 1),
+(4, 'Employee A1', 2),
+(5, 'Employee A2', 2),
+(6, 'Employee B1', 3),
+(7, 'Employee B2', 3),
+(8, 'Intern A1', 4);
+
+SELECT * FROM employees;
+
+
+
+WITH RECURSIVE employee_hierarchy AS (
+
+    -- 1. CEO / top-level employee
+    SELECT
+        e.emp_id AS id,
+        e.emp_name AS name,
+        e.manager_id,
+        CAST(NULL AS CHAR(100)) AS manager_name,
+        0 AS level
+    FROM employees e
+    WHERE e.manager_id IS NULL
+
+    UNION ALL
+
+    -- 2. Find employees of previous level
+    SELECT
+        e.emp_id AS id,
+        e.emp_name AS name,
+        e.manager_id,
+        CAST(eh.name AS CHAR(100)) AS manager_name,
+        eh.level + 1 AS level
+    FROM employees e
+    INNER JOIN employee_hierarchy eh
+        ON e.manager_id = eh.id
+)
+
+SELECT
+    id,
+    name,
+    manager_id,
+    manager_name
+FROM employee_hierarchy
+ORDER BY level, manager_id, id;
+
+
+CREATE TABLE customers (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(100)
+);
+
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    amount DECIMAL(10, 2),
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+INSERT INTO customers (customer_id, customer_name)
+VALUES
+(1, 'Rahul'),
+(2, 'Priya'),
+(3, 'Amit'),
+(4, 'Neha');
+
+INSERT INTO orders (order_id, customer_id, order_date, amount)
+VALUES
+(101, 1, '2026-08-01', 500),
+(102, 1, '2026-08-10', 1200),
+(103, 1, '2026-08-15', 800),
+
+(104, 2, '2026-07-20', 300),
+(105, 2, '2026-08-05', 900),
+
+(106, 3, '2026-06-15', 450),
+(107, 3, '2026-08-12', 1500),
+
+(108, 4, '2026-07-01', 700);
 
